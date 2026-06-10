@@ -6,14 +6,15 @@
   <title>コード構成音チェッカー</title>
   <style>
     :root {
-      --bg: #f4f7f2;
       --card: #ffffff;
       --main: #4f7f5f;
-      --accent: #f0b45b;
       --text: #26332c;
       --muted: #6d7a72;
       --line: #dce6dd;
       --danger: #b85c5c;
+      --accent: #f0b45b;
+      --blue: #5d7e9a;
+      --purple: #8a6f9f;
     }
 
     * { box-sizing: border-box; }
@@ -28,7 +29,7 @@
     }
 
     .app {
-      max-width: 940px;
+      max-width: 1080px;
       margin: 0 auto;
     }
 
@@ -66,10 +67,10 @@
       align-items: center;
     }
 
-    input {
+    input[type="text"], select {
       width: 100%;
-      font-size: 28px;
-      padding: 16px 18px;
+      font-size: 20px;
+      padding: 14px 16px;
       border-radius: 16px;
       border: 2px solid var(--line);
       outline: none;
@@ -77,7 +78,12 @@
       color: var(--text);
     }
 
-    input:focus {
+    input[type="text"] {
+      font-size: 28px;
+      padding: 16px 18px;
+    }
+
+    input[type="text"]:focus, select:focus {
       border-color: var(--main);
       box-shadow: 0 0 0 4px rgba(79, 127, 95, 0.12);
     }
@@ -97,6 +103,9 @@
 
     button:hover { opacity: 0.92; }
     button:active { transform: scale(0.98); }
+
+    .sound-button { background: #8a6f3a; }
+    .sound-button.secondary { background: var(--blue); }
 
     .examples {
       margin-top: 16px;
@@ -141,10 +150,26 @@
       cursor: pointer;
     }
 
-    .radio-label input {
-      width: auto;
-      font-size: initial;
-      padding: 0;
+    .tool-row {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .setting-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: #f6f9f6;
+      border: 1px solid var(--line);
+    }
+
+    .setting-box label {
+      display: block;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
     .result {
@@ -216,6 +241,89 @@
     .solfege { color: var(--main); }
     .degrees { color: #8a5b12; }
 
+    .sound-area {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .visuals {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .visual-card {
+      border-radius: 18px;
+      background: white;
+      padding: 16px;
+      border: 1px solid var(--line);
+      overflow-x: auto;
+    }
+
+    .keyboard {
+      position: relative;
+      height: 176px;
+      min-width: 760px;
+      margin-top: 6px;
+    }
+
+    .white-key {
+      position: absolute;
+      top: 0;
+      width: 52px;
+      height: 170px;
+      background: #fff;
+      border: 2px solid #cfd8d1;
+      border-radius: 0 0 10px 10px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px;
+      font-weight: 800;
+      color: #4d5a52;
+    }
+
+    .black-key {
+      position: absolute;
+      top: 0;
+      width: 34px;
+      height: 104px;
+      background: #26332c;
+      border-radius: 0 0 8px 8px;
+      z-index: 2;
+      color: white;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .key.active.white-key {
+      background: #fff1d6;
+      border-color: var(--accent);
+      color: #8a5b12;
+      box-shadow: inset 0 -10px 0 rgba(240,180,91,0.35);
+    }
+
+    .key.active.black-key {
+      background: var(--accent);
+      color: #3a2c11;
+    }
+
+    .staff-wrap {
+      min-width: 420px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
     .help {
       margin-top: 18px;
       padding: 16px;
@@ -248,6 +356,10 @@
       font-size: 13px;
     }
 
+    @media (max-width: 900px) {
+      .visuals, .tool-row { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 720px) {
       body { padding: 14px; }
       .input-area { grid-template-columns: 1fr; }
@@ -255,6 +367,7 @@
       .grid { grid-template-columns: 1fr; }
       .card { padding: 18px; }
       .chord-name { font-size: 38px; }
+      .sound-area { display: grid; grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -263,8 +376,8 @@
     <header>
       <h1>コード構成音チェッカー</h1>
       <div class="subtitle">
-        コードネームを入力すると、構成音を「英語音名」と「ドレミ」で表示します。<br>
-        #系・b系の表記にも対応しています。ドレミはCメジャー基準の固定ドです。
+        コードネームを入力すると、構成音・ドレミ・鍵盤図・五線表示を確認できます。<br>
+        #系・b系表示、コード音の再生、音色選択にも対応しています。
       </div>
     </header>
 
@@ -291,10 +404,31 @@
         <label class="radio-label"><input type="radio" name="notationMode" value="flat" onchange="analyzeChord()"> bで表示</label>
       </div>
 
+      <div class="tool-row">
+        <div class="setting-box">
+          <label for="toneSelect">音色</label>
+          <select id="toneSelect">
+            <option value="piano">ピアノ風</option>
+            <option value="organ">オルガン風</option>
+            <option value="guitar">ギター風</option>
+            <option value="sine">シンプル電子音</option>
+          </select>
+        </div>
+
+        <div class="setting-box">
+          <label for="octaveSelect">再生する高さ</label>
+          <select id="octaveSelect">
+            <option value="-1">低め</option>
+            <option value="0" selected>ふつう</option>
+            <option value="1">高め</option>
+          </select>
+        </div>
+      </div>
+
       <div class="result" id="result">
         <div class="help">
           例として <strong>G7</strong> と入力すると、<strong>ソ・シ・レ・ファ</strong> と表示されます。<br>
-          <strong>BbM7</strong> のようなb系コードでは、音名も <strong>Bb・D・F・A</strong> のようにb系で表示できます。
+          調べたあとに、音を鳴らしたり、鍵盤・五線で確認したりできます。
         </div>
       </div>
 
@@ -312,7 +446,6 @@
   </main>
 
   <script>
-    // 内部計算用。0=C, 1=C#/Db ... 11=B
     const noteIndexMap = {
       "C": 0, "B#": 0,
       "C#": 1, "Db": 1,
@@ -331,7 +464,6 @@
     const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const flatNames  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
-    // 固定ド。#系・b系どちらでも中学生に読みやすいように表示。
     const solfegeSharp = ["ド", "ド#", "レ", "レ#", "ミ", "ファ", "ファ#", "ソ", "ソ#", "ラ", "ラ#", "シ"];
     const solfegeFlat  = ["ド", "レb", "レ", "ミb", "ミ", "ファ", "ソb", "ソ", "ラb", "ラ", "シb", "シ"];
 
@@ -419,6 +551,12 @@
       }
     };
 
+    let currentNoteIndexes = [];
+    let currentNotation = "sharp";
+    let currentNoteNames = [];
+    let currentSolfegeNames = [];
+    let audioContext = null;
+
     function normalizeType(type) {
       return type
         .replaceAll("♭", "b")
@@ -438,18 +576,13 @@
 
     function decideNotation(rootText, type) {
       const selected = getSelectedMode();
-
       if (selected === "sharp") return "sharp";
       if (selected === "flat") return "flat";
-
-      // 自動モード
       if (rootText.includes("b")) return "flat";
       if (rootText.includes("#")) return "sharp";
-
       const keyName = rootText + (type.startsWith("m") ? "m" : "");
       if (flatKeys.includes(keyName)) return "flat";
       if (sharpKeys.includes(keyName)) return "sharp";
-
       return "sharp";
     }
 
@@ -464,6 +597,7 @@
       const input = inputElement.value.trim();
 
       if (!input) {
+        clearCurrent();
         result.innerHTML = `<div class="help">コードネームを入力してください。例：G7, BbM7, F#dim, Ebm7</div>`;
         return;
       }
@@ -471,6 +605,7 @@
       const match = input.match(/^([A-Ga-g](#|b)?)(.*)$/);
 
       if (!match) {
+        clearCurrent();
         result.innerHTML = `<div class="error">コードネームを正しく入力してください。<br>例：C, G7, Am, F#7, BbM7, Ebm7</div>`;
         return;
       }
@@ -479,11 +614,13 @@
       let type = normalizeType(match[3].trim());
 
       if (!(rootText in noteIndexMap)) {
+        clearCurrent();
         result.innerHTML = `<div class="error">ルート音を判定できませんでした。</div>`;
         return;
       }
 
       if (!(type in chordTypes)) {
+        clearCurrent();
         result.innerHTML = `
           <div class="error">
             「${input}」はまだ対応していないコードです。
@@ -507,9 +644,14 @@
       const chordNotes = noteIndexes.map(index => noteNames[index]);
       const solfegeNotes = noteIndexes.map(index => solfegeNames[index]);
 
+      currentNoteIndexes = noteIndexes;
+      currentNotation = notation;
+      currentNoteNames = chordNotes;
+      currentSolfegeNames = solfegeNotes;
+
       result.innerHTML = `
         <div class="result-title">
-          <div class="chord-name">${input}</div>
+          <div class="chord-name">${escapeHTML(input)}</div>
           <div class="chord-type">${chord.name}</div>
           <div class="notation-badge">${notationLabel}</div>
         </div>
@@ -531,11 +673,245 @@
           </div>
         </div>
 
+        <div class="sound-area">
+          <button class="sound-button" onclick="playChord()">同時に鳴らす</button>
+          <button class="sound-button secondary" onclick="playArpeggio()">1音ずつ鳴らす</button>
+        </div>
+
+        <div class="visuals">
+          <div class="visual-card">
+            <div class="label">鍵盤図</div>
+            ${renderKeyboard(noteIndexes, notation)}
+          </div>
+
+          <div class="visual-card staff-wrap">
+            <div class="label">五線表示（簡易）</div>
+            ${renderStaff(noteIndexes, chordNotes)}
+          </div>
+        </div>
+
         <div class="help">
           <strong>かんたん説明：</strong>${chord.explanation}<br>
-          <strong>ポイント：</strong>コードは「同時に鳴らす音のセット」です。
+          <strong>ポイント：</strong>コードは「同時に鳴らす音のセット」です。鍵盤や五線で見ると、音の距離が分かりやすくなります。
         </div>
       `;
+    }
+
+    function clearCurrent() {
+      currentNoteIndexes = [];
+      currentNoteNames = [];
+      currentSolfegeNames = [];
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, function(match) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[match];
+      });
+    }
+
+    function renderKeyboard(activeIndexes, notation) {
+      const active = new Set(activeIndexes);
+      const whiteSequence = [
+        {name:"C", index:0}, {name:"D", index:2}, {name:"E", index:4},
+        {name:"F", index:5}, {name:"G", index:7}, {name:"A", index:9}, {name:"B", index:11},
+        {name:"C", index:0}, {name:"D", index:2}, {name:"E", index:4},
+        {name:"F", index:5}, {name:"G", index:7}, {name:"A", index:9}, {name:"B", index:11}
+      ];
+
+      const blackSequence = [
+        {after:0, sharp:"C#", flat:"Db", index:1},
+        {after:1, sharp:"D#", flat:"Eb", index:3},
+        {after:3, sharp:"F#", flat:"Gb", index:6},
+        {after:4, sharp:"G#", flat:"Ab", index:8},
+        {after:5, sharp:"A#", flat:"Bb", index:10},
+        {after:7, sharp:"C#", flat:"Db", index:1},
+        {after:8, sharp:"D#", flat:"Eb", index:3},
+        {after:10, sharp:"F#", flat:"Gb", index:6},
+        {after:11, sharp:"G#", flat:"Ab", index:8},
+        {after:12, sharp:"A#", flat:"Bb", index:10}
+      ];
+
+      const keyW = 52;
+      let html = `<div class="keyboard">`;
+
+      whiteSequence.forEach((key, i) => {
+        const left = i * keyW;
+        const isActive = active.has(key.index);
+        html += `<div class="key white-key ${isActive ? "active" : ""}" style="left:${left}px">${key.name}</div>`;
+      });
+
+      blackSequence.forEach((key) => {
+        const left = key.after * keyW + 35;
+        const label = notation === "flat" ? key.flat : key.sharp;
+        const isActive = active.has(key.index);
+        html += `<div class="key black-key ${isActive ? "active" : ""}" style="left:${left}px">${label}</div>`;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    function renderStaff(noteIndexes, noteNames) {
+      // ト音記号の簡易表示。C4〜B4を中心に、見やすい位置へ配置。
+      const yMap = {
+        0: 150,  // C
+        1: 150,
+        2: 140,  // D
+        3: 140,
+        4: 130,  // E
+        5: 120,  // F
+        6: 120,
+        7: 110,  // G
+        8: 110,
+        9: 100,  // A
+        10: 100,
+        11: 90   // B
+      };
+
+      const accidentalMapSharp = {1:"#",3:"#",6:"#",8:"#",10:"#"};
+      const accidentalMapFlat = {1:"b",3:"b",6:"b",8:"b",10:"b"};
+      const accidentalMap = currentNotation === "flat" ? accidentalMapFlat : accidentalMapSharp;
+
+      let notes = "";
+      noteIndexes.forEach((idx, i) => {
+        const x = 120 + i * 70;
+        const y = yMap[idx];
+        const accidental = accidentalMap[idx] || "";
+        if (accidental) {
+          notes += `<text x="${x - 32}" y="${y + 7}" font-size="24" font-weight="800" fill="#26332c">${accidental}</text>`;
+        }
+        notes += `<ellipse cx="${x}" cy="${y}" rx="16" ry="11" transform="rotate(-18 ${x} ${y})" fill="#4f7f5f"></ellipse>`;
+        notes += `<text x="${x - 20}" y="184" font-size="14" font-weight="800" fill="#4d5a52">${noteNames[i]}</text>`;
+
+        if (idx === 0 || idx === 1) {
+          notes += `<line x1="${x - 26}" y1="150" x2="${x + 26}" y2="150" stroke="#26332c" stroke-width="2"></line>`;
+        }
+      });
+
+      return `
+        <svg viewBox="0 0 420 210" role="img" aria-label="五線表示">
+          <rect x="0" y="0" width="420" height="210" rx="16" fill="#ffffff"></rect>
+          <text x="26" y="120" font-size="58" font-family="serif" fill="#26332c">𝄞</text>
+          <line x1="76" y1="70" x2="390" y2="70" stroke="#26332c" stroke-width="2"></line>
+          <line x1="76" y1="90" x2="390" y2="90" stroke="#26332c" stroke-width="2"></line>
+          <line x1="76" y1="110" x2="390" y2="110" stroke="#26332c" stroke-width="2"></line>
+          <line x1="76" y1="130" x2="390" y2="130" stroke="#26332c" stroke-width="2"></line>
+          <line x1="76" y1="150" x2="390" y2="150" stroke="#26332c" stroke-width="2"></line>
+          ${notes}
+        </svg>
+      `;
+    }
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      return audioContext;
+    }
+
+    function noteIndexToFrequency(noteIndex, octaveOffset = 0) {
+      const c4 = 261.625565;
+      const semitoneFromC4 = noteIndex + octaveOffset * 12;
+      return c4 * Math.pow(2, semitoneFromC4 / 12);
+    }
+
+    function playTone(frequency, startTime, duration, volume = 0.18) {
+      const ctx = getAudioContext();
+      const tone = document.getElementById("toneSelect").value;
+
+      if (tone === "piano") {
+        playLayeredTone(frequency, startTime, duration, volume, [
+          {type:"triangle", ratio:1, gain:1.0},
+          {type:"sine", ratio:2, gain:0.24},
+          {type:"sine", ratio:3, gain:0.11}
+        ], "pluck");
+      } else if (tone === "organ") {
+        playLayeredTone(frequency, startTime, duration, volume, [
+          {type:"sine", ratio:1, gain:0.9},
+          {type:"sine", ratio:2, gain:0.35},
+          {type:"sine", ratio:4, gain:0.16}
+        ], "steady");
+      } else if (tone === "guitar") {
+        playLayeredTone(frequency, startTime, duration, volume, [
+          {type:"triangle", ratio:1, gain:0.9},
+          {type:"sawtooth", ratio:2, gain:0.10},
+          {type:"sine", ratio:3, gain:0.08}
+        ], "pluck");
+      } else {
+        playLayeredTone(frequency, startTime, duration, volume, [
+          {type:"sine", ratio:1, gain:1.0}
+        ], "steady");
+      }
+    }
+
+    function playLayeredTone(frequency, startTime, duration, volume, layers, envelope) {
+      const ctx = getAudioContext();
+
+      layers.forEach(layer => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.type = layer.type;
+        oscillator.frequency.setValueAtTime(frequency * layer.ratio, startTime);
+
+        const peak = volume * layer.gain;
+
+        gain.gain.setValueAtTime(0.0001, startTime);
+
+        if (envelope === "pluck") {
+          gain.gain.exponentialRampToValueAtTime(peak, startTime + 0.018);
+          gain.gain.exponentialRampToValueAtTime(Math.max(peak * 0.28, 0.0001), startTime + 0.22);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        } else {
+          gain.gain.exponentialRampToValueAtTime(peak, startTime + 0.04);
+          gain.gain.setValueAtTime(peak * 0.85, startTime + Math.max(duration - 0.18, 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        }
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.04);
+      });
+    }
+
+    function playChord() {
+      if (!currentNoteIndexes.length) {
+        analyzeChord();
+        if (!currentNoteIndexes.length) return;
+      }
+
+      const ctx = getAudioContext();
+      const start = ctx.currentTime + 0.02;
+      const octaveOffset = Number(document.getElementById("octaveSelect").value);
+
+      currentNoteIndexes.forEach((noteIndex) => {
+        playTone(noteIndexToFrequency(noteIndex, octaveOffset), start, 1.45, 0.11);
+      });
+    }
+
+    function playArpeggio() {
+      if (!currentNoteIndexes.length) {
+        analyzeChord();
+        if (!currentNoteIndexes.length) return;
+      }
+
+      const ctx = getAudioContext();
+      const start = ctx.currentTime + 0.02;
+      const octaveOffset = Number(document.getElementById("octaveSelect").value);
+
+      currentNoteIndexes.forEach((noteIndex, i) => {
+        playTone(noteIndexToFrequency(noteIndex, octaveOffset), start + i * 0.42, 0.62, 0.18);
+      });
     }
 
     document.getElementById("chordInput").addEventListener("keydown", function(event) {
